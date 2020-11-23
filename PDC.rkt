@@ -195,4 +195,45 @@
   (list (- row 1) (- column 2)))
 ;movLeft_Bott, Obtiene la coordenada de mover izquierda y a abajo|#
 (define (movLeft_Bott row column)
-  (list (+ row 1) (- column 2)))       
+  (list (+ row 1) (- column 2)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;PDC-Test
+(define (PDC-Test size solution )
+  (cond
+    ((not (validInput2? size solution))
+     (fprintf (current-output-port) "Valor de entrada Invalido"))
+  (else (cond
+          ((car (solution? solution size))
+           (display "Solucion Correcta" )
+           (newline)
+           (printMatrix (getMatrix size solution)))
+          (else
+           (display "Solución incorrecta")
+           (newline)
+           (printMatrix (getMatrix size solution)))))))
+
+;prinMatrix, permite la visualizacion de la matriz
+(define (printMatrix matrix)
+  (printMatrix-Aux matrix (length matrix) 1 1))
+
+;printMatrix-Aux, recursiva de printMatrix
+(define (printMatrix-Aux matrix size count1 count2)
+  (cond((> count2 size) (newline))
+       ((>= count1 size)
+       (printf "~a\t" (get count1 (get count2 matrix)))
+       (newline)
+       (printMatrix-Aux matrix size 1 (+ count2 1)))
+       (else
+        (printf "~a\t" (get count1 (get count2 matrix)))
+        (printMatrix-Aux matrix size (+ count1 1) count2) )))
+
+;getMatrix,Eepresentación de la solución en forma de matriz
+(define (getMatrix size solution)
+  (getMatrix_aux size solution (buildMatrix size -1) 0))
+
+;getMatrix-Aux, auxiliar recursiva getMatrix 
+(define (getMatrix_aux size solution matrix count)
+  (cond((null? solution) matrix)
+       (else
+        (getMatrix_aux size (cdr solution) (mark count (caar solution) (cadar solution) matrix) (+ count 1)))))
