@@ -111,4 +111,88 @@
         (getDegree-Aux x y matrix (cdr moves) (+ count 1)))
   (else
    (getDegree-Aux x y matrix (cdr moves) count))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;PDC-Todas
+(define (PDC-Todas size position)
+  (cond((validInput? size position)
+        (getSteps(getMoves position size '() ) size (list position) (current-seconds)))
+  (else(
+        (current-output-port)
+        "Valor de entrada inválido"))))
+;getSteps, hace el backtrack para resolver el problema
+(define(getSteps moves size paths time)
+  (cond
+    [(> (- (current-seconds) time) 60) (list)]
+    [(and (empty? moves) (= (length  paths) (* size size))) (list paths)]
+    [(empty? moves) '()]
+    [(and (empty? (getMoves (car moves) size paths)) (= (length paths) (- (* size size) 1))) (getSteps (cdr moves) size (append paths (list(car moves))) time)]
+    [(empty? (getMoves (car moves) size paths)) (getSteps (cdr moves) size paths time)]
+    [else (append (getSteps (getMoves (car moves) size (cons (car moves) paths)) size (append paths (list (car moves))) time)
+                  (getSteps (cdr moves) size paths time))]))
 
+
+;getMoves, Crea una lista coordenadas de los movimientos considerando el scope y los recorridos|
+(define (getMoves position size paths)
+  (deletePaths paths (moveScope size (buildListMoves (movUp_Right (car position) (cadr position))
+                                                     (movUp_Left (car position) (cadr position))
+                                                     (movDown_Right (car position) (cadr position))
+                                                     (movDown_Left (car position) (cadr position))
+                                                     (movRight_Top (car position) (cadr position))
+                                                     (movRight_Bott(car position) (cadr position))
+                                                     (movLeft_Top (car position) (cadr position))
+                                                     (movLeft_Bott (car position) (cadr position))))))
+;deletePaths, elimina las coordenadas ya recorridas de sus posibles movimiento
+(define (deletePaths paths moves)
+  (cond
+    [(empty? moves) '()]
+    [(lookingPaths (car moves) paths ) (deletePaths paths (cdr moves))]
+    [else (cons (car moves) (deletePaths paths (cdr moves)))]))
+
+;lookingPaths, verifica si la coordenada se encuentra entre los recorridos(paths)
+(define (lookingPaths position paths)
+  (cond
+    [(= (length paths) 0) #f]
+    [(equal? (car paths) position) #t]
+    [else (lookingPaths position ( cdr paths ))]))
+
+;moveScope,  Crea lista con los movimientos que estan dentro del tablero (considerando unicamente el scope)
+(define (moveScope size moves)
+  (cond
+    [(empty? moves) '()]
+    [(movInside? (car moves) size ) (cons (car moves) (moveScope size (cdr moves)))]
+    [else (moveScope size (cdr moves))]))
+
+;movInside?, booleana verifica si esta dentro o no del tablero
+(define (movInside? position size)
+  (cond
+    [(and (and (<= (car position) size)  (<= (cadr position) size))  (and (> (car position) 0) (> (cadr position) 0))) #t]
+    [else #f]))
+
+;buildListMoves, crea lista con todas las coordenadas de movimientos posibles no considera el scope ni los movimientos recorridos.
+(define (buildListMoves UR UL DR DL RT RB LT LB)
+  (list UR UL DR DL RT RB LT LB))
+
+;movUp_Right, Obtiene la coordenada de mover arriba y a la derecha
+(define (movUp_Right row column)
+  (list (- row 2) (+ column 1)))
+;movUp_Left, Obtiene la coordenada de mover arriba y a la izquierda
+(define (movUp_Left row column)
+  (list (- row 2) (- column 1)))
+;movDown_Right, Obtiene la coordenada de mover abajo y a la derecha
+(define (movDown_Right row column)
+  (list (+ row 2) (+ column 1)))
+;movDown_Left, Obtiene la coordenada de mover abajo y a la izquierda
+(define (movDown_Left row column)
+  (list (+ row 2) (- column 1)))
+;movRight_Top, Obtiene la coordenada de mover derecha y a arriba
+(define (movRight_Top row column)
+  (list (- row 1) (+ column 2)))
+;movRight_Bott, Obtiene la coordenada de mover arriba y a la derecha
+(define (movRight_Bott row column)
+  (list (+ row 1) (+ column 2)))
+;movLeft_Top Obtiene la coordenada de mover izquierda y a arriba
+(define (movLeft_Top row column)
+  (list (- row 1) (- column 2)))
+;movLeft_Bott, Obtiene la coordenada de mover izquierda y a abajo|#
+(define (movLeft_Bott row column)
+  (list (+ row 1) (- column 2)))       
