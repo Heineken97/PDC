@@ -14,7 +14,7 @@
                    [horiz-margin 40]
                    [spacing 30]))
 
-; Hereda la clase canvas y anade handlers para el teclado y mouse
+;Hereda la clase canvas y anade manejador para el teclado y mouse
 (define my-canvas%
   (class canvas% ; The base class is canvas%
     (define/override (on-char event)(cond
@@ -24,7 +24,7 @@
     (super-new)
     ))
 
-;Crea el canvas
+;Creador del canvas
 (define (canvas cells)(new my-canvas%
                            [parent frame]
                            [min-width (* 75 cells)]
@@ -32,7 +32,7 @@
 ;Instancia del canvas
 (define canvas-instance null)
 
-;Funcion principal, inicia la solucion
+;Funcion principal, inicia el pintado de la solucion
 (define (PDC-Paint cells sol)
   (cond
     ((validInput2? cells sol)
@@ -59,11 +59,9 @@
              [min-height 25]
              [min-width 610])
         (send error-dialog show #t))))
-    (else (fprintf (current-output-port)
-                          "Valor de entrada inválido")))
-  )
+    (else (fprintf (current-output-port)"Valor de entrada inválido"))))
 
-;Construye el tablero
+;Construccion del tablero
 (define (board dc size hpos vpos)(cond
                                    ((equal? size vpos) #t)
                                    ((equal? size hpos) (board dc size 0 (+ vpos 1)))
@@ -75,7 +73,6 @@
                                        (send dc set-brush "white" 'solid)))
                                     (send dc draw-rectangle (* 75 hpos) (* 75 vpos) 75 75)
                                     (board dc size (+ hpos 1) vpos))))
-
 
 ;Icono del caballo
 (define horse-icon (read-bitmap "GUI/horse.png"))
@@ -111,7 +108,7 @@
                        (update dc (caar path) (cadar path))
                        (set! path (cdr path)))))
 
-;visual-path =m Crea la linea del path
+;visual-path, Crea la linea del path
 (define visual-path (new dc-path%))
 
 ;start-path, Define la casilla de inicio
