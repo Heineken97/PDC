@@ -78,7 +78,7 @@
 
 
 ;Icono del caballo
-(define horse-icon (read-bitmap "GUI/horse@0.75.png"))
+(define horse-icon (read-bitmap "GUI/horse.png"))
 
 ;Icono de alerta
 (define alert-icon (read-bitmap "GUI/alert.png"))

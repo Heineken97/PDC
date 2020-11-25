@@ -22,30 +22,22 @@
 
 ;buildMatrix, Construye matriz cuadrada, se inician las posiciones con el valor dado
 ;llama a su funcion auxiliar usando value como la llamada recursiva se esa misma funcion auxiliar
-;size: indica el tamano de la matrix cuadrada nxn
-;value: valor con el cual se rellana la matriz 
 (define (buildMatrix size value)
   (buildMatrix-Aux size (buildMatrix-Aux size value 0) 0))
 
 ;buildMatrix-Aux, Conteo es igual al tamanio retorna lista vacia, sino, crea constante llamandose recursivamente asi misma
-;se encerga de llenar las listas de la matriz
 (define (buildMatrix-Aux size value count)
   (cond((= count size)
         '())
   (else(cons value (buildMatrix-Aux size value (+ count 1))))))
 
 ;mark,Asigna un valor a un elemento de matriz en su dada posición, siendo 1 la primera posición
-;se utiliza funcion get para obtener elemento de la matriz segun su posicion
-;x-y representan la posicion de elemento en la matriz
 (define (mark value x y matrix)
   (mark_aux
    (mark_aux value y (get x matrix) 1)
    x
    matrix 1))
-
 ;recursiva de la función mark
-;evalua las listas de la matriz hasta estar en la posicion indicada
-;construye la lista con value en la posicion indicada
 (define (mark_aux value pos _list temp_pos)
   (cond
     ((null? _list) (list))
@@ -55,15 +47,10 @@
      (cons (car _list) (mark_aux value pos (cdr _list) (+ temp_pos 1))))
     )
   )
-
-;Determina siguiente movimiento a partir de una posición(x-y), utilizando la eurística de Warndorff
-;llama nextMove_aux con la posicion y la lista de posibles movimientos
+;Determina siguiente movimiento a partir de una posición, utilizando la eurística de Warndorff
 (define (nextMove x y matrix)
   (nextMove_aux x y matrix (list) 9 (list '( 1 2)  '( 1 -2) '( 2 1)  '( 2 -1) '(-1 2)  '(-1 -2) '(-2 1)  '(-2 -1))))
 ;recursiva de nextMove
-;utiliza lista con los posibles movimientos en la matriz
-;utiliza la funcion getDegree para obtener la cantidad de movimientos validos de una posicion
-;minDegree es
 (define (nextMove_aux x y matrix index minDegree moves)
   (cond((null? moves) index)
        ((and(isEmpty? (+ x (caar moves)) (+ y (cadar moves)) matrix)
@@ -73,16 +60,12 @@
             (equal? (getDegree (+ x (caar moves)) (+ y (cadar moves)) matrix) minDegree))
         (nextMove_aux x y matrix(tieBreaker (list (+ x (caar moves)) (+ y (cadar moves))) index matrix) minDegree(cdr moves)))
        (else (nextMove_aux x y matrix index minDegree (cdr moves)))))
-
 ;isEmpty?, Función booleana, comprueba si posición de la matriz ya ha sido visitada,
-;por defecto un no visitado es -1
+; por defecto un no visitado es -1
 (define (isEmpty? x y matrix)
   (and (in_bounds? x y (length matrix))
        (= -1 (get y (get x matrix)))))
-
 ;in_bounds?, booleana comprueba si la posición se encuentra dentro de una matriz de tamaño ya dado
-;size: define el tamano de la matriz
-;x-y: posicion en matriz
 (define (in_bounds? x y size)
   (and (and (> x 0)
             (> y 0))
@@ -91,21 +74,16 @@
 
 ;get, Obtener elemento de una lista dada su posición
 ;usa 1 como posicion inicial
-;pos: indica la posicion de la lista que se quiere obtener
-;list: lista en la que se busca el elemento
 (define (get pos list)
   (get-Aux pos list 1))
 
 ;get-aux,función recursiva de la función get
-;pivot-pos se utiliza como indice para recorrer la lista, inicia con 1
 (define (get-Aux pos list pivot-pos)
   (cond 
     ((equal? pivot-pos pos) (car list))
   (else (get-Aux pos (cdr list) (+ pivot-pos 1)))))
 
-;tiebreaker, decide entre dos puntos cual es el siguiente, devuelve el que se encuentre más lejos del centro de la matriz
-;utiliza la funcion middle para calcular centro de la matriz
-;utiliza la funcion distance para calcular la distanca entre 2 puntos
+;tiebreaker, decide entre dos puntos cual es el siguiente, se basa en el que se encuentre más lejos del centro de la matriz
 (define (tieBreaker index1 index2 matrix)
   (cond
     ((>=(distance index1 (middle matrix))(distance index2 (middle matrix)))
@@ -122,39 +100,26 @@
   (list (ceiling (/(length matrix) 2))
         (ceiling (/ (length matrix) 2))))
 
-;getDegree, Determina la cantidad de movimientos validos a partir de una posición en una matriz
-;utiliza list con los posibles movimientos en el tablero
+;getDegree, Determina la cantidad de movimientos validosa partir de una posición en una matriz|#
 (define (getDegree x y matrix)
   (getDegree-Aux x y matrix (list '( 1 2) '( 1 -2)'( 2 1) '( 2 -1) '(-1 2) '(-1 -2)'(-2 1) '(-2 -1)) 0))
 
 ;getDegree-Aux, recursiva de la función getDegree |#
-;count: lleva la cuenta de la cantidad posible de movimientos
-;moves: lista de los posibles movimientos en el tablero
 (define (getDegree-Aux x y matrix moves count)
   (cond((null? moves) count)
        ((isEmpty? (+ x (caar moves)) (+ y (cadar moves)) matrix)
         (getDegree-Aux x y matrix (cdr moves) (+ count 1)))
   (else
    (getDegree-Aux x y matrix (cdr moves) count))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;PDC-Todas
-
-;Funcion principal a la cual se llama para encontrar todas las soluciones, llama a la funcion que lleva a cabo el backtrack y le pasa sus parametros necesarios
-;Funcion principal para encontrar todas las soluciones
-;utiliza la funcion validInput? para verificar que se esta ingresando los parametros con el formato correcto
-;size: tamano de la matriz nxn
-;position: coordenada inicial del caballo
 (define (PDC-Todas size position)
   (cond((validInput? size position)
         (getSteps(getMoves position size '() ) size (list position) (current-seconds)))
   (else(
         (current-output-port)
         "Valor de entrada inválido"))))
-
 ;getSteps, hace el backtrack para resolver el problema
-;moves: lista con coordenadas posibles en las que se puede mover segun la posicion
-;path: lista que almacena el recorrido del caballo por el tablero
 (define(getSteps moves size paths time)
   (cond
     [(> (- (current-seconds) time) 60) (list)]
@@ -165,8 +130,8 @@
     [else (append (getSteps (getMoves (car moves) size (cons (car moves) paths)) size (append paths (list (car moves))) time)
                   (getSteps (cdr moves) size paths time))]))
 
-;getMoves, Crea una lista coordenadas de los movimientos considerando el scope y los recorridos
-;utiliza la funcion deletePaths para eliminar las coordernadas que ya han sido recorridas
+
+;getMoves, Crea una lista coordenadas de los movimientos considerando el scope y los recorridos|
 (define (getMoves position size paths)
   (deletePaths paths (moveScope size (buildListMoves (movUp_Right (car position) (cadr position))
                                                      (movUp_Left (car position) (cadr position))
@@ -176,9 +141,7 @@
                                                      (movRight_Bott(car position) (cadr position))
                                                      (movLeft_Top (car position) (cadr position))
                                                      (movLeft_Bott (car position) (cadr position))))))
-
 ;deletePaths, elimina las coordenadas ya recorridas de sus posibles movimiento
-;utiliza la funcion lookingPaths para verificar si alguna posicion nueva ya se encuentra dentro del recorrido, de ser asi lo elimina de la lista moves
 (define (deletePaths paths moves)
   (cond
     [(empty? moves) '()]
@@ -186,15 +149,13 @@
     [else (cons (car moves) (deletePaths paths (cdr moves)))]))
 
 ;lookingPaths, verifica si la coordenada se encuentra entre los recorridos(paths)
-;verifica si la posicion brindada por la lista moves ya se encuentra en el camino del caballo y si es asi la elimina
 (define (lookingPaths position paths)
   (cond
     [(= (length paths) 0) #f]
     [(equal? (car paths) position) #t]
     [else (lookingPaths position ( cdr paths ))]))
 
-;moveScope,Crea lista con los movimientos que estan dentro del tablero (considerando unicamente el scope)
-;utilza la funcion movInside para saber cuales posiciones eliminar del tablero
+;moveScope,  Crea lista con los movimientos que estan dentro del tablero (considerando unicamente el scope)
 (define (moveScope size moves)
   (cond
     [(empty? moves) '()]
@@ -202,14 +163,12 @@
     [else (moveScope size (cdr moves))]))
 
 ;movInside?, booleana verifica si esta dentro o no del tablero
-;verifica que las coodernadas se encuentren de la matriz cuadrada de tamano size
 (define (movInside? position size)
   (cond
     [(and (and (<= (car position) size)  (<= (cadr position) size))  (and (> (car position) 0) (> (cadr position) 0))) #t]
     [else #f]))
 
 ;buildListMoves, crea lista con todas las coordenadas de movimientos posibles no considera el scope ni los movimientos recorridos.
-;movimientos posibles segun el formato del caballo en ajedrez
 (define (buildListMoves UR UL DR DL RT RB LT LB)
   (list UR UL DR DL RT RB LT LB))
 
@@ -240,11 +199,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;PDC-Test
-
-;Función encargada de validar una solución y representarla en forma de matriz
-;size: tamano de la matriz cuadrada que representa el tablero
-;solution: matriz con posible solucion que se verifica para ver si es correcta o no
-;utiliza la funcion validInput2? para verificar que el formato de los parametros es correcto
 (define (PDC-Test size solution )
   (cond
     ((not (validInput2? size solution))
@@ -259,7 +213,7 @@
            (newline)
            (printMatrix (getMatrix size solution)))))))
 
-;prinMatrix, permite la visualizacion de la matriz de una manera mas entendible
+;prinMatrix, permite la visualizacion de la matriz
 (define (printMatrix matrix)
   (printMatrix-Aux matrix (length matrix) 1 1))
 
@@ -274,13 +228,11 @@
         (printf "~a\t" (get count1 (get count2 matrix)))
         (printMatrix-Aux matrix size (+ count1 1) count2) )))
 
-;getMatrix,Representación de la solución en forma de matriz
-;solution: lista con las coordenadas del recorrido
+;getMatrix,Eepresentación de la solución en forma de matriz
 (define (getMatrix size solution)
   (getMatrix_aux size solution (buildMatrix size -1) 0))
 
-;getMatrix-Aux, auxiliar recursiva getMatrix
-;se encarga de crear una matriz que indica el recorrido del caballo
+;getMatrix-Aux, auxiliar recursiva getMatrix 
 (define (getMatrix_aux size solution matrix count)
   (cond((null? solution) matrix)
        (else
